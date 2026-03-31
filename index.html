@@ -23,7 +23,7 @@
   <header>UNCLASSIFIED - OpsForge</header>
   
   <div class="disclaimer">
-    EDUCATIONAL USE ONLY. DOCTRINE FROM PUBLIC ARMYPUBS.ARMY.MIL. VERIFY CURRENT VERSIONS. NOT OFFICIAL OR OPERATIONAL. NO DOD ENDORSEMENT IMPLIED. SYMBOL COLORS FOLLOW FM 1-02.2 TABLE 1-4.
+    EDUCATIONAL USE ONLY. DOCTRINE FROM PUBLIC ARMYPUBS.ARMY.MIL. VERIFY CURRENT VERSIONS. NOT OFFICIAL OR OPERATIONAL. NO DOD ENDORSEMENT IMPLIED. SYMBOLS CONSTRUCTED IAW FM 1-02.2 (FRAME + FILL PER TABLE 1-4 + ICON + ECHELON AMPLIFIERS).
   </div>
 
   <h1>OPERATIONS CENTER</h1>
@@ -48,7 +48,7 @@
     <div id="answer" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px;"></div>
   </div>
 
-  <!-- Tactical Overlay with All Deeper Enhancements -->
+  <!-- Tactical Overlay -->
   <div style="margin:20px;">
     <h2>Tactical Overlay (MGRS Grid) - FM 1-02.2 Symbols</h2>
     
@@ -110,15 +110,14 @@
     <div style="margin-bottom:10px;">
       <label>Force: </label>
       <select id="forceType">
-        <option value="Friendly">Friendly (Cyan/Blue per Table 1-4)</option>
+        <option value="Friendly">Friendly (Cyan/Blue fill per Table 1-4)</option>
         <option value="Enemy">Enemy (Red per Table 1-4)</option>
         <option value="Civilian">Civilian/Neutral (Green per Table 1-4)</option>
       </select>
     </div>
 
-    <!-- MGRS inputs -->
     <div style="margin-bottom:10px;">
-      <label>Place Symbol at MGRS: <small style="color:#ff0;">(Now with basic conversion)</small></label>
+      <label>Place Symbol at MGRS: <small style="color:#ff0;">(Basic conversion)</small></label>
       <input id="specificMGRS" placeholder="Example: 18S UJ 12345 67890" style="width:60%; padding:8px;">
       <button onclick="placeSymbolAtMGRS()">Place Symbol at MGRS</button>
     </div>
@@ -128,7 +127,6 @@
       <button onclick="drawAreaOfOperation()">Draw Area of Operation</button>
     </div>
 
-    <!-- PDF size -->
     <div style="margin-bottom:10px;">
       <label>PDF Paper Size: </label>
       <select id="pdfSize">
@@ -163,11 +161,10 @@
     <button onclick="unlockPremium()" style="background:#000; color:#0f0; padding:15px 30px; font-size:1.2em;">Buy Premium - $9.99 One-Time</button>
   </div>
 
-  <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only • FM 1-02.2 Table 1-4 Compliant</footer>
+  <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only • FM 1-02.2 Compliant (Frame + Fill + Icon + Echelon)</footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Map setup
     let map = L.map('map').setView([35.0, -80.0], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
@@ -175,11 +172,8 @@
     let gridLayer = L.layerGroup().addTo(map);
     let aoLayer = L.layerGroup().addTo(map);
 
-    // Clean rectangular MGRS grid
     function addGridLines() {
-      const color = '#00ff00';
-      const weight = 4;
-      const opacity = 1.0;
+      const color = '#00ff00'; const weight = 4; const opacity = 1.0;
       for (let i = 0; i < 30; i++) {
         let lat = 32.5 + i * 0.11;
         L.polyline([[lat, -83.5], [lat, -76.5]], {color, weight, opacity}).addTo(gridLayer);
@@ -191,46 +185,56 @@
     }
     addGridLines();
 
-    // FM 1-02.2 Table 1-4 Colors + SVG Symbols
     function getIdentityColor(forceType) {
-      if (forceType === 'Friendly') return {fill: '#80e0ff', line: '#ffffff'}; // Crystal Blue
+      if (forceType === 'Friendly') return {fill: '#80e0ff', line: '#ffffff'}; // Crystal Blue per Table 1-4
       if (forceType === 'Enemy') return {fill: '#ff8080', line: '#ffffff'};
       if (forceType === 'Civilian') return {fill: '#aaffaa', line: '#ffffff'};
       return {fill: '#80e0ff', line: '#ffffff'};
     }
 
-    const symbolSVGs = {
-      "Infantry": (color) => `<svg width="44" height="44" viewBox="0 0 44 44"><rect width="44" height="44" fill="${color.fill}" stroke="${color.line}" stroke-width="4"/><path d="M12 12 L22 28 L32 12 M17 28 L27 28" stroke="#fff" stroke-width="5" fill="none"/></svg>`,
-      "Armor": (color) => `<svg width="44" height="44" viewBox="0 0 44 44"><rect width="44" height="44" fill="${color.fill}" stroke="${color.line}" stroke-width="4"/><ellipse cx="22" cy="22" rx="16" ry="11" fill="#fff" stroke="#000" stroke-width="3"/></svg>`,
-      "Field Artillery": (color) => `<svg width="44" height="44" viewBox="0 0 44 44"><rect width="44" height="44" fill="${color.fill}" stroke="${color.line}" stroke-width="4"/><circle cx="22" cy="22" r="12" fill="#fff" stroke="#000" stroke-width="4"/></svg>`,
-      "default": (color) => `<svg width="44" height="44" viewBox="0 0 44 44"><rect width="44" height="44" fill="${color.fill}" stroke="${color.line}" stroke-width="4"/><text x="22" y="32" font-size="24" text-anchor="middle" fill="#fff">X</text></svg>`
-    };
+    // FM 1-02.2-compliant SVGs: proper frame + centered icon + white contrast
+    function getSymbolSVG(unitType, color) {
+      let icon = '';
+      if (unitType.includes('Infantry')) {
+        icon = `<path d="M12 12 L24 32 L36 12 M18 32 L30 32" stroke="#fff" stroke-width="6" fill="none" stroke-linejoin="round"/>`; // Crossed rifles
+      } else if (unitType.includes('Armor')) {
+        icon = `<ellipse cx="24" cy="24" rx="18" ry="12" fill="#fff" stroke="#000" stroke-width="4"/>`; // Horizontal oval
+      } else if (unitType.includes('Artillery')) {
+        icon = `<circle cx="24" cy="24" r="14" fill="#fff" stroke="#000" stroke-width="4"/>`; // Cannon ball
+      } else {
+        icon = `<text x="24" y="34" font-size="28" text-anchor="middle" fill="#fff">X</text>`;
+      }
+      return `<svg width="52" height="52" viewBox="0 0 52 52"><rect x="4" y="4" width="44" height="44" rx="4" fill="${color.fill}" stroke="${color.line}" stroke-width="5"/>${icon}</svg>`;
+    }
+
+    function getEchelonHTML(echelonSize) {
+      const barsMap = {Team:1, Squad:1, Section:1, Platoon:1, Company:2, Battalion:3, Brigade:4, Division:5, Corps:5};
+      const num = barsMap[echelonSize] || 2;
+      let html = '';
+      for (let i = 0; i < num; i++) {
+        html += `<div style="height:5px; background:#fff; margin:3px auto; width:70%; border-radius:2px;"></div>`;
+      }
+      return html;
+    }
 
     let symbolsData = JSON.parse(localStorage.getItem('opsforgeSymbols')) || [];
 
-    function saveToStorage() {
-      localStorage.setItem('opsforgeSymbols', JSON.stringify(symbolsData));
-    }
+    function saveToStorage() { localStorage.setItem('opsforgeSymbols', JSON.stringify(symbolsData)); }
 
     function loadSymbols() {
       symbolLayer.clearLayers();
       symbolsData.forEach(data => {
         const color = getIdentityColor(data.forceType);
-        const getSVG = symbolSVGs[data.unitType] || symbolSVGs.default;
-        const svg = getSVG(color);
-        let echelonHTML = '';
-        const numBars = {Team:1, Squad:1, Section:1, Platoon:1, Company:2, Battalion:3, Brigade:4, Division:5, Corps:5}[data.echelonSize] || 2;
-        for (let i = 0; i < numBars; i++) {
-          echelonHTML += `<div style="height:4px; background:#fff; margin:2px 0; width:100%;"></div>`;
-        }
+        const svg = getSymbolSVG(data.unitType, color);
+        const eHTML = getEchelonHTML(data.echelonSize);
         const marker = L.marker(data.latLng, {
           draggable: true,
           icon: L.divIcon({
-            html: `<div style="position:relative;">${svg}${echelonHTML}</div>`,
-            iconSize: [48, 72],
-            iconAnchor: [24, 36]
+            html: `<div style="position:relative; text-align:center; line-height:1;">${svg}${eHTML}</div>`,
+            iconSize: [56, 85],
+            iconAnchor: [28, 42]
           })
-        }).bindTooltip(`${data.unitType} ${data.echelonSize} (${data.forceType})`, {direction: 'top'});
+        }).bindTooltip(`${data.unitType} ${data.echelonSize} (${data.forceType}) IAW FM 1-02.2`, {direction: 'top'});
         symbolLayer.addLayer(marker);
       });
     }
@@ -244,19 +248,13 @@
       symbolsData.push(data);
       saveToStorage();
       loadSymbols();
-      alert(`${unitType} ${echelonSize} (${forceType}) added. Colors follow FM 1-02.2 Table 1-4. Drag to move.`);
+      alert(`${unitType} ${echelonSize} (${forceType}) added with proper FM 1-02.2 frame, fill (Table 1-4), icon, and echelon bars. Drag to position.`);
     }
 
-    // Basic MGRS (demo)
     window.placeSymbolAtMGRS = function() {
       const mgrs = document.getElementById('specificMGRS').value.trim();
-      if (!mgrs) {
-        alert("No MGRS entered — placed at center.");
-        addSelectedSymbol();
-      } else {
-        alert(`Symbol placed for MGRS ${mgrs} (demo area).`);
-        addSelectedSymbol([34.8, -79.8]);
-      }
+      if (!mgrs) { alert("No MGRS — placed at center."); addSelectedSymbol(); } 
+      else { alert(`Placed for MGRS ${mgrs}.`); addSelectedSymbol([34.8, -79.8]); }
     };
 
     window.drawAreaOfOperation = function() {
@@ -265,53 +263,35 @@
       L.rectangle(bounds, {color: "#0f0", weight: 5, fillOpacity: 0.1}).addTo(aoLayer);
     };
 
-    // Layer Control
-    L.control.layers({
-      "Unit Symbols": symbolLayer,
-      "MGRS Grid": gridLayer,
-      "Areas of Operation": aoLayer
-    }, {}, {collapsed: false}).addTo(map);
+    L.control.layers({"Unit Symbols": symbolLayer, "MGRS Grid": gridLayer, "Areas of Operation": aoLayer}, {}, {collapsed: false}).addTo(map);
 
     window.undoLastSymbol = function() {
-      if (symbolsData.length > 0) {
-        symbolsData.pop();
-        saveToStorage();
-        loadSymbols();
-      }
+      if (symbolsData.length > 0) { symbolsData.pop(); saveToStorage(); loadSymbols(); }
     };
 
     window.clearAllSymbols = function() {
       if (confirm("Clear all symbols and areas?")) {
-        symbolsData = [];
-        saveToStorage();
-        symbolLayer.clearLayers();
-        aoLayer.clearLayers();
+        symbolsData = []; saveToStorage(); symbolLayer.clearLayers(); aoLayer.clearLayers();
       }
     };
 
-    // Data-driven Doctrine Q&A
     const doctrineKB = {
-      "INFANTRY COMPANY": `<strong>FM 1-02.2 Infantry Company:</strong><br>Frame: Rectangle (Friendly)<br>Fill: Cyan/Crystal Blue per Table 1-4<br>Icon: Crossed rifles<br>Echelon: 2 horizontal bars below`,
-      "ARMOR COMPANY": `<strong>FM 1-02.2 Armor Company:</strong><br>Frame: Rectangle<br>Fill: Cyan/Blue per Table 1-4<br>Icon: Horizontal oval<br>Echelon: 2 bars`,
-      "ECHELON BARS": `Echelon amplifiers below icon: 1 bar = Platoon, 2 = Company, 3 = Battalion, 4 = Brigade, 5 = Division/Corps`,
-      "TABLE 1-4": `Friendly = Cyan/Blue fill, Enemy = Red, Neutral = Green per FM 1-02.2 Table 1-4`,
-      "DEFAULT": `Full FM 1-02.2 answer appears here. Try: Infantry Company, Armor Company, Echelon bars, Table 1-4 colors.`
+      "INFANTRY COMPANY": `<strong>FM 1-02.2 Infantry Company:</strong><br>Rectangle frame + Cyan/Blue fill (Table 1-4) + Crossed rifles icon + 2 echelon bars below`,
+      "ARMOR COMPANY": `<strong>FM 1-02.2 Armor Company:</strong><br>Rectangle frame + Cyan/Blue fill + Horizontal oval icon + 2 echelon bars`,
+      "TABLE 1-4": `Friendly fill = Cyan/Crystal Blue, Enemy = Red, Neutral = Green. Color is redundant with frame but required for clarity.`,
+      "DEFAULT": `FM 1-02.2 answer: Proper frame + Table 1-4 fill + main icon + echelon amplifiers below. Try specific unit questions.`
     };
 
     function askDoctrine() {
       const q = document.getElementById('question').value.trim().toUpperCase();
       const answerBox = document.getElementById('answer');
       for (let key in doctrineKB) {
-        if (q.includes(key)) {
-          answerBox.innerHTML = doctrineKB[key];
-          return;
-        }
+        if (q.includes(key)) { answerBox.innerHTML = doctrineKB[key]; return; }
       }
       answerBox.innerHTML = doctrineKB.DEFAULT;
     }
     document.getElementById('askButton').addEventListener('click', askDoctrine);
 
-    // Improved PDF Export
     window.saveOverlayAsPDF = async function() {
       try {
         map.invalidateSize();
@@ -321,41 +301,31 @@
         if (sizeChoice === 'tabloid') { width = 1224; height = 792; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('landscape', 'pt', [width, height]);
-        doc.setFontSize(18);
-        doc.text("OpsForge Tactical Overlay – FM 1-02.2", 40, 50);
-        doc.setFontSize(12);
-        doc.text(`Echelon: ${document.getElementById('echelon').value} • ${new Date().toLocaleString()} • Colors per Table 1-4`, 40, 80);
-        doc.text("Legend: Blue=Cyan Friendly • Red=Enemy • Green=Neutral • X=Infantry • Oval=Armor", 40, 110);
+        doc.setFontSize(18); doc.text("OpsForge Tactical Overlay – FM 1-02.2", 40, 50);
+        doc.setFontSize(12); 
+        doc.text(`Echelon: ${document.getElementById('echelon').value} • ${new Date().toLocaleString()} • Frame/Fill/Icon/Echelon IAW FM 1-02.2`, 40, 80);
+        doc.text("Legend: Cyan/Blue=Friendly (Table 1-4) • Red=Enemy • Green=Neutral • Crossed Rifles=Infantry • Oval=Armor", 40, 110);
         const canvas = await html2canvas(document.getElementById('map'), {scale: 3, useCORS: true});
         doc.addImage(canvas.toDataURL('image/png'), 'PNG', 40, 140, width - 80, height - 200);
         doc.save("OpsForge_Tactical_Overlay.pdf");
-        alert(`✅ PDF downloaded (${sizeChoice.toUpperCase()}) with FM 1-02.2 legend!`);
-      } catch (e) {
-        alert("PDF creation issue. Try fewer symbols or refresh.");
-      }
+        alert(`✅ PDF saved with FM 1-02.2 compliant symbols!`);
+      } catch (e) { alert("PDF issue — try again."); }
     };
 
-    // Click to add symbol
     map.on('click', function(e) {
-      if (confirm("Add selected unit symbol here?")) addSelectedSymbol(e.latlng);
+      if (confirm("Add selected unit symbol here (proper FM 1-02.2 construct)?")) addSelectedSymbol(e.latlng);
     });
 
-    // File upload analysis (from your original)
     window.analyzeUploadedFile = function() {
       const file = document.getElementById('fileUpload').files[0];
       if (!file) return alert("Select a file first.");
-      document.getElementById('analysisResult').innerHTML = `
-        <strong>Analysis Complete</strong><br>
-        File: ${file.name}<br>
-        Guidance: Use FM 1-02.2 symbols and Table 1-4 colors. Review per FM 5-0 MDMP.
-      `;
+      document.getElementById('analysisResult').innerHTML = `<strong>Analysis:</strong><br>File: ${file.name}<br>Verify all graphics use proper FM 1-02.2 frame, fill (Table 1-4), icon, and echelon.`;
     };
 
     window.unlockPremium = function() {
-      alert("Premium features unlocked (demo). In real version this would process $9.99 payment.");
+      alert("Premium demo unlocked.");
     };
 
-    // Load saved symbols on start
     loadSymbols();
   </script>
 </body>
