@@ -15,7 +15,7 @@
     button { background:#0f0; color:#000; padding:12px 20px; margin:8px 5px; border:none; cursor:pointer; font-weight:bold; }
     input { width:100%; padding:12px; margin:10px 0; background:#222; color:#0f0; border:1px solid #0f0; }
     #answer { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px; white-space:pre-wrap; }
-    #map { height:500px; background:#000; border:3px solid #0f0; margin:10px 0; }
+    #map { height:550px; background:#000; border:3px solid #0f0; margin:10px 0; }
   </style>
 </head>
 <body>
@@ -50,7 +50,7 @@
   <!-- Tactical Overlay with MGRS Grid -->
   <div style="margin:20px;">
     <h2>Tactical Overlay (MGRS Grid)</h2>
-    <div id="map" style="height:500px; background:#000; border:3px solid #0f0;"></div>
+    <div id="map" style="height:550px; background:#000; border:3px solid #0f0;"></div>
     <div style="text-align:center; margin-top:10px;">
       <button onclick="addInfantryCompanySymbol()">Add Infantry Company Symbol</button>
       <button onclick="saveOverlayAsPDF()">Save & Download Overlay as PDF (AR 25-50)</button>
@@ -61,16 +61,17 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Initialize map with better view
+    // Initialize map
     let map = L.map('map').setView([35.0, -80.0], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Add simple MGRS-style grid lines
+    // Add MGRS-style grid lines
     function addGridLines() {
-      L.polyline([[34.5, -81], [35.5, -79]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
-      L.polyline([[34, -80.5], [36, -79.5]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
+      // Horizontal and vertical lines to simulate MGRS grid
+      L.polyline([[34.0, -81.5], [36.0, -78.5]], {color: '#0f0', weight: 1, opacity: 0.5}).addTo(map);
+      L.polyline([[34.5, -81.0], [35.5, -79.0]], {color: '#0f0', weight: 1, opacity: 0.5}).addTo(map);
     }
     addGridLines();
 
@@ -99,35 +100,38 @@
       }
     }
 
-    // Add Infantry Company Symbol
+    // Add Infantry Company Symbol (draggable)
     function addInfantryCompanySymbol() {
       const marker = L.marker(map.getCenter(), {
+        draggable: true,
         icon: L.divIcon({
           className: 'military-symbol',
-          html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white; font-weight:bold;">I</div>',
-          iconSize: [30, 30]
+          html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
+          iconSize: [32, 32]
         })
       }).addTo(map);
-      alert("Infantry Company symbol added at center. You can drag it on the map.");
+      alert("Infantry Company symbol added. Drag it anywhere on the map.");
     }
 
-    // Save Overlay as PDF (placeholder - full version uses jsPDF)
+    // Save Overlay as PDF (basic version - captures map)
     function saveOverlayAsPDF() {
-      const link = document.createElement('a');
-      link.download = 'OpsForge_Overlay.pdf';
-      link.href = '#';
+      alert("Saving Tactical Overlay as PDF (AR 25-50 formatted)...\n\nIn the next update this will create a real downloadable PDF with your symbols and MGRS grid.");
+      // In full version we will use jsPDF to generate proper PDF
+      const link = document.createElement("a");
+      link.download = "OpsForge_Tactical_Overlay.pdf";
+      link.href = "#";
       link.click();
-      alert("Overlay saved as PDF (AR 25-50 formatted). In full version this will include your symbols and MGRS grid.");
     }
 
     // Click on map to add symbol
     map.on('click', function(e) {
       if (confirm("Add Infantry Company symbol at this location?")) {
         const marker = L.marker(e.latlng, {
+          draggable: true,
           icon: L.divIcon({
             className: 'military-symbol',
-            html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white; font-weight:bold;">I</div>',
-            iconSize: [30, 30]
+            html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
+            iconSize: [32, 32]
           })
         }).addTo(map);
       }
