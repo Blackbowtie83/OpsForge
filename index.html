@@ -6,6 +6,8 @@
   <title>OpsForge</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     body { margin:0; font-family:Arial; background:#111; color:#0f0; }
     header, footer { background:#001f00; color:#0f0; text-align:center; padding:12px; font-size:1.3em; font-weight:bold; }
@@ -69,9 +71,9 @@
 
     // Add MGRS-style grid lines
     function addGridLines() {
-      // Horizontal and vertical lines to simulate MGRS grid
-      L.polyline([[34.0, -81.5], [36.0, -78.5]], {color: '#0f0', weight: 1, opacity: 0.5}).addTo(map);
-      L.polyline([[34.5, -81.0], [35.5, -79.0]], {color: '#0f0', weight: 1, opacity: 0.5}).addTo(map);
+      L.polyline([[34.0, -81.5], [36.0, -78.5]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
+      L.polyline([[34.5, -81.0], [35.5, -79.0]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
+      L.polyline([[34.8, -80.8], [35.8, -79.2]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
     }
     addGridLines();
 
@@ -113,14 +115,30 @@
       alert("Infantry Company symbol added. Drag it anywhere on the map.");
     }
 
-    // Save Overlay as PDF (basic version - captures map)
-    function saveOverlayAsPDF() {
-      alert("Saving Tactical Overlay as PDF (AR 25-50 formatted)...\n\nIn the next update this will create a real downloadable PDF with your symbols and MGRS grid.");
-      // In full version we will use jsPDF to generate proper PDF
-      const link = document.createElement("a");
-      link.download = "OpsForge_Tactical_Overlay.pdf";
-      link.href = "#";
-      link.click();
+    // Improved Save Overlay as PDF using html2canvas + jsPDF
+    async function saveOverlayAsPDF() {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape', 'pt', 'a4');
+
+        doc.setFontSize(18);
+        doc.text("OpsForge Tactical Overlay", 40, 50);
+        doc.setFontSize(12);
+        doc.text("AR 25-50 Formatted • UNCLASSIFIED", 40, 80);
+        doc.text("Echelon: " + document.getElementById('echelon').value, 40, 100);
+        doc.text("Generated on: " + new Date().toLocaleDateString(), 40, 120);
+
+        // Capture the map as image
+        const canvas = await html2canvas(document.getElementById('map'), { scale: 1.5 });
+        const mapImage = canvas.toDataURL('image/png');
+
+        doc.addImage(mapImage, 'PNG', 40, 150, 700, 400);
+
+        doc.save("OpsForge_Tactical_Overlay.pdf");
+        alert("✅ PDF downloaded successfully! It includes your map, symbols, and MGRS grid (AR 25-50 formatted).");
+      } catch (e) {
+        alert("PDF creation failed. Please try again.");
+      }
     }
 
     // Click on map to add symbol
