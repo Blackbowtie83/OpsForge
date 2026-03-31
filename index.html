@@ -168,18 +168,20 @@
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Show clear MGRS-style grids
+    // Thick, bright, easy-to-see MGRS grids
     function addGridLines() {
-      // Many lines for 1:50,000 feel
-      for (let i = 0; i < 12; i++) {
-        let lat1 = 34.0 + i * 0.2;
-        let lat2 = 36.0 - i * 0.2;
-        L.polyline([[lat1, -81.5], [lat2, -78.5]], {color: '#0f0', weight: 1, opacity: 0.7}).addTo(map);
+      const color = '#00ff00';
+      const weight = 4;
+      const opacity = 1.0;
+      for (let i = 0; i < 20; i++) {
+        let lat1 = 33.5 + i * 0.15;
+        let lat2 = 36.5 - i * 0.15;
+        L.polyline([[lat1, -82.0], [lat2, -78.0]], {color: color, weight: weight, opacity: opacity}).addTo(map);
       }
-      for (let i = 0; i < 12; i++) {
-        let lng1 = -81.5 + i * 0.25;
-        let lng2 = -78.5 - i * 0.25;
-        L.polyline([[34.0, lng1], [36.0, lng2]], {color: '#0f0', weight: 1, opacity: 0.7}).addTo(map);
+      for (let i = 0; i < 20; i++) {
+        let lng1 = -82.0 + i * 0.2;
+        let lng2 = -78.0 - i * 0.2;
+        L.polyline([[33.5, lng1], [36.5, lng2]], {color: color, weight: weight, opacity: opacity}).addTo(map);
       }
     }
     addGridLines();
@@ -216,7 +218,7 @@
     }
     document.getElementById('askButton').addEventListener('click', askDoctrine);
 
-    // Add selected unit symbol - FM 1-02.2 style with unique icons and echelon bars
+    // Add selected unit symbol - FM 1-02.2 style
     function addSelectedSymbol() {
       const unitType = document.getElementById('unitType').value;
       const echelonSize = document.getElementById('echelonSize').value;
@@ -225,7 +227,7 @@
       if (forceType === 'Enemy') color = '#f00';
       if (forceType === 'Civilian') color = '#aaa';
       
-      let iconText = 'X'; // default Infantry
+      let iconText = 'X';
       if (unitType.includes('Armor')) iconText = 'A';
       if (unitType.includes('Artillery')) iconText = 'R';
       if (unitType.includes('Engineer')) iconText = 'E';
@@ -236,7 +238,6 @@
       if (unitType.includes('Medical')) iconText = 'M';
       if (unitType.includes('Signal')) iconText = '⚡';
 
-      // FM 1-02.2 echelon bars visual
       let echelonHTML = '';
       if (echelonSize === 'Company') echelonHTML = '<div style="height:4px; background:white; margin-top:2px;"></div><div style="height:4px; background:white; margin-top:2px;"></div>';
       if (echelonSize === 'Battalion') echelonHTML = '<div style="height:4px; background:white; margin-top:2px;"></div><div style="height:4px; background:white; margin-top:2px;"></div><div style="height:4px; background:white; margin-top:2px;"></div>';
@@ -276,18 +277,17 @@
       L.rectangle(bounds, {color: "#0f0", weight: 3, fillOpacity: 0.15}).addTo(map);
     }
 
-    // Save Overlay as PDF with paper size choice and 1:50,000 note
+    // Save Overlay as PDF with thick visible grids
     async function saveOverlayAsPDF() {
       try {
         map.invalidateSize();
         const sizeChoice = document.getElementById('pdfSize').value;
-        let width, height, orientation = 'landscape';
-        if (sizeChoice === 'letter') { width = 792; height = 612; }      // 8.5x11 landscape
-        else if (sizeChoice === 'legal') { width = 1008; height = 612; } // 8.5x14 landscape
-        else { width = 1224; height = 792; }                             // 11x17 landscape
+        let width = 792, height = 612;
+        if (sizeChoice === 'legal') { width = 1008; height = 612; }
+        if (sizeChoice === 'tabloid') { width = 1224; height = 792; }
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF(orientation, 'pt', [width, height]);
+        const doc = new jsPDF('landscape', 'pt', [width, height]);
         doc.setFontSize(18);
         doc.text("OpsForge Tactical Overlay", 40, 50);
         doc.setFontSize(12);
@@ -301,7 +301,7 @@
         doc.addImage(mapImage, 'PNG', 40, 150, width - 80, height - 220);
 
         doc.save("OpsForge_Tactical_Overlay.pdf");
-        alert("✅ PDF downloaded successfully! (" + sizeChoice.toUpperCase() + " size • 1:50,000 scale • FM 1-02.2 symbols).");
+        alert("✅ PDF downloaded successfully! (" + sizeChoice.toUpperCase() + " size • thick MGRS grids • FM 1-02.2 symbols).");
       } catch (e) {
         alert("PDF creation failed. Please try again.");
       }
