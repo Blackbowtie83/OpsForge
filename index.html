@@ -18,6 +18,7 @@
     input { width:100%; padding:12px; margin:10px 0; background:#222; color:#0f0; border:1px solid #0f0; }
     #answer { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px; white-space:pre-wrap; }
     #map { height:550px; background:#000; border:3px solid #0f0; margin:10px 0; }
+    #analysisResult { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px; }
   </style>
 </head>
 <body>
@@ -49,7 +50,7 @@
     <div id="answer" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px;"></div>
   </div>
 
-  <!-- Tactical Overlay -->
+  <!-- Tactical Overlay with MGRS Grid -->
   <div style="margin:20px;">
     <h2>Tactical Overlay (MGRS Grid)</h2>
     <div id="map" style="height:550px; background:#000; border:3px solid #0f0;"></div>
@@ -126,7 +127,7 @@
       alert("Infantry Company symbol added. Drag it anywhere on the map.");
     }
 
-    // Save Overlay as PDF
+    // Save Overlay as PDF with better capture
     async function saveOverlayAsPDF() {
       try {
         const { jsPDF } = window.jspdf;
@@ -138,7 +139,8 @@
         doc.text("Echelon: " + document.getElementById('echelon').value, 40, 100);
         doc.text("Generated on: " + new Date().toLocaleDateString(), 40, 120);
 
-        const canvas = await html2canvas(document.getElementById('map'), { scale: 2 });
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const canvas = await html2canvas(document.getElementById('map'), { scale: 2, useCORS: true });
         const mapImage = canvas.toDataURL('image/png');
         doc.addImage(mapImage, 'PNG', 40, 150, 700, 400);
 
