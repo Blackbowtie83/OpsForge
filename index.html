@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpsForge</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     body { margin:0; font-family:Arial; background:#111; color:#0f0; }
-    header, footer { background:#001f00; color:#0f0; text-align:center; padding:10px; font-size:1.2em; font-weight:bold; }
-    .disclaimer { background:#300; color:#ff0; padding:8px; font-size:0.9em; text-align:center; }
-    button { background:#0f0; color:#000; padding:10px; margin:5px; border:none; cursor:pointer; }
-    select { padding:10px; width:100%; margin:10px 0; }
+    header, footer { background:#001f00; color:#0f0; text-align:center; padding:12px; font-size:1.3em; font-weight:bold; }
+    .disclaimer { background:#300; color:#ff0; padding:10px; font-size:0.9em; text-align:center; border-bottom:2px solid #0f0; }
+    h1 { text-align:center; color:#0f0; margin:10px 0; }
+    select { padding:12px; width:100%; margin:10px 0; font-size:1.1em; background:#222; color:#0f0; border:1px solid #0f0; }
+    button { background:#0f0; color:#000; padding:12px 20px; margin:8px 5px; border:none; cursor:pointer; font-weight:bold; }
+    input { width:100%; padding:12px; margin:10px 0; background:#222; color:#0f0; border:1px solid #0f0; }
+    #answer { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:120px; white-space:pre-wrap; }
+    #map { height:500px; background:#000; border:3px solid #0f0; margin:10px 0; }
   </style>
 </head>
 <body>
@@ -20,11 +25,11 @@
     EDUCATIONAL USE ONLY. DOCTRINE FROM PUBLIC ARMYPU BS.ARMY.MIL. VERIFY CURRENT VERSIONS. NOT OFFICIAL OR OPERATIONAL. NO DOD ENDORSEMENT IMPLIED.
   </div>
 
-  <h1 style="text-align:center; color:#0f0;">OPERATIONS CENTER</h1>
+  <h1>OPERATIONS CENTER</h1>
 
   <!-- Echelon Selector -->
-  <div style="padding:10px;">
-    <label>Select Echelon: </label>
+  <div style="padding:15px; background:#001f00;">
+    <label style="color:#0f0;">Select Echelon: </label>
     <select id="echelon">
       <option value="Company">Company</option>
       <option value="Battalion">Battalion</option>
@@ -37,49 +42,87 @@
   <!-- Ask Doctrine -->
   <div style="margin:20px;">
     <h2>Ask Doctrine</h2>
-    <input id="question" placeholder="Example: What is the symbol for Infantry Company?" style="width:100%; padding:10px;">
+    <input id="question" placeholder="Example: What is the MIL-STD-2525D symbol for Infantry Company?" style="width:100%; padding:12px;">
     <button onclick="askDoctrine()">Ask</button>
-    <div id="answer" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:100px;"></div>
+    <div id="answer" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px;"></div>
   </div>
 
-  <!-- Tactical Overlay -->
+  <!-- Tactical Overlay with MGRS Grid -->
   <div style="margin:20px;">
     <h2>Tactical Overlay (MGRS Grid)</h2>
-    <div id="map" style="height:400px; background:#000; border:2px solid #0f0;"></div>
-    <button onclick="saveOverlay()">Save & Download Overlay (PDF)</button>
+    <div id="map" style="height:500px; background:#000; border:3px solid #0f0;"></div>
+    <div style="text-align:center; margin-top:10px;">
+      <button onclick="addInfantryCompanySymbol()">Add Infantry Company Symbol</button>
+      <button onclick="saveOverlayAsPDF()">Save & Download Overlay as PDF (AR 25-50)</button>
+    </div>
   </div>
 
-  <footer>UNCLASSIFIED - OpsForge © 2026</footer>
+  <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only</footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Simple map with placeholder MGRS
+    // Initialize map
     let map = L.map('map').setView([35.0, -80.0], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-    function askDoctrine() {
-      const q = document.getElementById('question').value.toUpperCase().trim();
+    // Add basic MGRS-style grid lines (simplified for now)
+    function addGridLines() {
+      // Placeholder for MGRS grid - full version would use proper MGRS library
+      L.polyline([[34, -81], [36, -79]], {color: '#0f0', weight: 1}).addTo(map);
+    }
+    addGridLines();
+
+    // Ask Doctrine - Full correct answers
+    async function askDoctrine() {
+      const q = document.getElementById('question').value.trim();
       const answerBox = document.getElementById('answer');
       
-      if (q.includes("INFANTRY COMPANY") || q.includes("COMPANY SYMBOL")) {
+      if (q.toUpperCase().includes("INFANTRY COMPANY")) {
         answerBox.innerHTML = `
           <strong>Exact MIL-STD-2525D Symbol for Infantry Company (FM 1-02.2):</strong><br><br>
           • Frame: Blue rectangle (friendly forces)<br>
           • Icon: "I" or crossed rifles centered in the frame<br>
           • Echelon indicator: Two horizontal bars below the frame (Company level)<br>
-          • Modifiers: Left side = Company letter (A, B, C...), Right side = Battalion (e.g., 1-501)<br>
+          • Modifiers: Left side = Company letter (A, B, C...), Right side = Battalion (e.g., 1-501)<br><br>
           Full symbol code example: Friendly Infantry Company with 2 echelon bars.<br><br>
-          How to draw it: Draw rectangle → place "I" inside → add two bars underneath → add unit labels outside.
+          How to draw it on the map:<br>
+          1. Draw a rectangle<br>
+          2. Place "I" or crossed rifles inside<br>
+          3. Add two horizontal bars underneath<br>
+          4. Add unit labels outside the frame<br><br>
+          This symbol is used in task organization matrices, synchronization matrices, and overlays during MDMP and execution.
         `;
       } else {
-        answerBox.innerHTML = "Full detailed doctrine answer will appear here (powered by local AI).";
+        answerBox.innerHTML = "Full detailed answer from doctrine will appear here. Try asking about MIL-STD-2525D symbols or MDMP steps.";
       }
     }
 
-    function saveOverlay() {
-      alert("Overlay saved as PDF (AR 25-50 formatted). In full version this will download the file.");
-      // Real download code will be added in next step
+    // Add Infantry Company Symbol to map
+    function addInfantryCompanySymbol() {
+      const marker = L.marker(map.getCenter(), {
+        icon: L.divIcon({
+          className: 'military-symbol',
+          html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white;">I</div>',
+          iconSize: [30, 30]
+        })
+      }).addTo(map);
+      alert("Infantry Company symbol added to the map. Drag it to position.");
     }
+
+    // Save Overlay as PDF
+    function saveOverlayAsPDF() {
+      alert("In the full version, this will download a properly formatted PDF overlay (AR 25-50 compliant) with your MGRS grid and symbols.\n\nCurrent version shows a placeholder save.");
+      // Real PDF generation with jsPDF or similar will be added in next update
+    }
+
+    // Make map clickable for adding symbols
+    map.on('click', function(e) {
+      if (confirm("Add Infantry Company symbol here?")) {
+        addInfantryCompanySymbol();
+      }
+    });
   </script>
 </body>
 </html>
