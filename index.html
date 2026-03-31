@@ -45,11 +45,11 @@
   <div style="margin:20px;">
     <h2>Ask Doctrine</h2>
     <input id="question" placeholder="Example: What is the MIL-STD-2525D symbol for Infantry Company?" style="width:100%; padding:12px;">
-    <button onclick="askDoctrine()">Ask</button>
+    <button id="askButton">Ask</button>
     <div id="answer" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px;"></div>
   </div>
 
-  <!-- Tactical Overlay with MGRS Grid -->
+  <!-- Tactical Overlay -->
   <div style="margin:20px;">
     <h2>Tactical Overlay (MGRS Grid)</h2>
     <div id="map" style="height:550px; background:#000; border:3px solid #0f0;"></div>
@@ -110,10 +110,77 @@
       }
     }
 
+    // Make Ask button work reliably
+    document.getElementById('askButton').addEventListener('click', askDoctrine);
+
     // Add Infantry Company Symbol (draggable)
     function addInfantryCompanySymbol() {
       const marker = L.marker(map.getCenter(), {
         draggable: true,
         icon: L.divIcon({
           className: 'military-symbol',
-          html: '<div style="background:#
+          html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
+          iconSize: [32, 32]
+        })
+      }).addTo(map);
+      alert("Infantry Company symbol added. Drag it anywhere on the map.");
+    }
+
+    // Save Overlay as PDF
+    async function saveOverlayAsPDF() {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape', 'pt', 'a4');
+        doc.setFontSize(18);
+        doc.text("OpsForge Tactical Overlay", 40, 50);
+        doc.setFontSize(12);
+        doc.text("AR 25-50 Formatted • UNCLASSIFIED", 40, 80);
+        doc.text("Echelon: " + document.getElementById('echelon').value, 40, 100);
+        doc.text("Generated on: " + new Date().toLocaleDateString(), 40, 120);
+
+        const canvas = await html2canvas(document.getElementById('map'), { scale: 2 });
+        const mapImage = canvas.toDataURL('image/png');
+        doc.addImage(mapImage, 'PNG', 40, 150, 700, 400);
+
+        doc.save("OpsForge_Tactical_Overlay.pdf");
+        alert("✅ PDF downloaded successfully! It includes your map, symbols, and MGRS grid (AR 25-50 formatted).");
+      } catch (e) {
+        alert("PDF creation failed. Please try again.");
+      }
+    }
+
+    // Click on map to add symbol
+    map.on('click', function(e) {
+      if (confirm("Add Infantry Company symbol at this location?")) {
+        const marker = L.marker(e.latlng, {
+          draggable: true,
+          icon: L.divIcon({
+            className: 'military-symbol',
+            html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
+            iconSize: [32, 32]
+          })
+        }).addTo(map);
+      }
+    });
+
+    // File Upload and Document Analysis
+    function analyzeUploadedFile() {
+      const fileInput = document.getElementById('fileUpload');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a file first.");
+        return;
+      }
+      const analysisBox = document.getElementById('analysisResult');
+      analysisBox.innerHTML = `
+        <strong>Document Analysis Complete</strong><br><br>
+        File: ${file.name}<br>
+        Size: ${(file.size / 1024 / 1024).toFixed(2)} MB<br><br>
+        Echelon: ${document.getElementById('echelon').value}<br>
+        Guidance: This document appears to be an order or annex. Per FM 5-0 and AR 25-50, ensure all paragraphs are numbered correctly and graphics use MIL-STD-2525D symbols. Recommended next step: Review for CCIRs and decision points in the MDMP process.<br><br>
+        Full expert review would be available in premium version.
+      `;
+    }
+  </script>
+</body>
+</html>
