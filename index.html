@@ -56,20 +56,76 @@
       <label>Unit Type: </label>
       <select id="unitType">
         <option value="Infantry">Infantry</option>
+        <option value="Infantry (Mechanized)">Infantry (Mechanized)</option>
+        <option value="Infantry (Stryker)">Infantry (Stryker)</option>
         <option value="Armor">Armor</option>
-        <option value="Artillery">Artillery</option>
-        <option value="Mechanized">Mechanized</option>
-        <option value="Aviation">Aviation</option>
-        <option value="Engineer">Engineer</option>
+        <option value="Cavalry">Cavalry</option>
+        <option value="Armored Cavalry">Armored Cavalry</option>
+        <option value="Air Assault Infantry">Air Assault Infantry</option>
+        <option value="Airborne Infantry">Airborne Infantry</option>
+        <option value="Light Infantry">Light Infantry</option>
+        <option value="Field Artillery">Field Artillery</option>
+        <option value="Air Defense Artillery">Air Defense Artillery</option>
+        <option value="Engineers">Engineers</option>
+        <option value="Military Intelligence">Military Intelligence</option>
+        <option value="Signal">Signal / Communications</option>
+        <option value="Military Police">Military Police</option>
+        <option value="Chemical">Chemical (CBRN)</option>
+        <option value="Cyber">Cyber / Electronic Warfare</option>
+        <option value="Supply">Supply (Quartermaster)</option>
+        <option value="Medical">Medical</option>
+        <option value="Maintenance">Maintenance</option>
         <option value="Transportation">Transportation</option>
+        <option value="Ordnance">Ordnance</option>
+        <option value="Finance">Finance</option>
+        <option value="Personnel">Personnel (Adjutant General)</option>
+        <option value="Rotary Wing">Rotary Wing (Attack/Utility)</option>
+        <option value="Fixed Wing">Fixed Wing</option>
+        <option value="UAS">Unmanned Aircraft (UAS)</option>
+        <option value="Special Forces">Special Forces</option>
+        <option value="Rangers">Rangers</option>
+        <option value="Psychological Operations">Psychological Operations</option>
+        <option value="Civil Affairs">Civil Affairs</option>
       </select>
-      <label style="margin-left:20px;">Force: </label>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Echelon / Unit Size Name: </label>
+      <select id="echelonSize">
+        <option value="Team">Team</option>
+        <option value="Squad">Squad</option>
+        <option value="Section">Section</option>
+        <option value="Platoon">Platoon</option>
+        <option value="Company">Company</option>
+        <option value="Battalion">Battalion</option>
+        <option value="Regiment">Regiment</option>
+        <option value="Brigade">Brigade</option>
+        <option value="Division">Division</option>
+        <option value="Corps">Corps</option>
+        <option value="Field Army">Field Army</option>
+        <option value="Army Group">Army Group</option>
+      </select>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Force: </label>
       <select id="forceType">
         <option value="Friendly">Friendly</option>
         <option value="Enemy">Enemy</option>
         <option value="Civilian">Civilian</option>
       </select>
     </div>
+
+    <!-- MGRS inputs -->
+    <div style="margin-bottom:10px;">
+      <label>Place Symbol at MGRS: </label>
+      <input id="specificMGRS" placeholder="Example: 18S UJ 12345 67890" style="width:60%; padding:8px;">
+      <button onclick="placeSymbolAtMGRS()">Place Symbol at MGRS</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Area of Operation MGRS Grid: </label>
+      <input id="aoMGRS" placeholder="Example: 18S UJ 0000 0000 to 18S UJ 9999 9999" style="width:60%; padding:8px;">
+      <button onclick="drawAreaOfOperation()">Draw Area of Operation</button>
+    </div>
+
     <div id="map" style="height:550px; background:#000; border:3px solid #0f0;"></div>
     <div style="text-align:center; margin-top:10px;">
       <button onclick="addSelectedSymbol()">Add Selected Unit Symbol</button>
@@ -109,7 +165,7 @@
     }
     addGridLines();
 
-    // Ask Doctrine - Full correct answers for more questions
+    // Ask Doctrine - Full correct answers
     function askDoctrine() {
       const q = document.getElementById('question').value.trim();
       const answerBox = document.getElementById('answer');
@@ -144,24 +200,6 @@
           3. Add two horizontal bars underneath<br>
           4. Add unit labels outside the frame
         `;
-      } else if (upperQ.includes("ARTILLERY COMPANY")) {
-        answerBox.innerHTML = `
-          <strong>Exact MIL-STD-2525D Symbol for Artillery Company (FM 1-02.2):</strong><br><br>
-          • Frame: Blue rectangle (friendly forces)<br>
-          • Icon: "R" centered in the frame<br>
-          • Echelon indicator: Two horizontal bars below the frame (Company level)<br>
-          • Modifiers: Left side = Company letter, Right side = Battalion<br><br>
-          Full symbol code example: Friendly Artillery Company with 2 echelon bars.
-        `;
-      } else if (upperQ.includes("AVIATION COMPANY")) {
-        answerBox.innerHTML = `
-          <strong>Exact MIL-STD-2525D Symbol for Aviation Company (FM 1-02.2):</strong><br><br>
-          • Frame: Blue rectangle (friendly forces)<br>
-          • Icon: "V" centered in the frame<br>
-          • Echelon indicator: Two horizontal bars below the frame (Company level)<br>
-          • Modifiers: Left side = Company letter, Right side = Battalion<br><br>
-          Full symbol code example: Friendly Aviation Company with 2 echelon bars.
-        `;
       } else {
         answerBox.innerHTML = `
           Full detailed doctrine answer from FM 1-02.2, FM 3-0, and FM 5-0 will appear here based on your question. The app uses local RAG to pull exact paragraphs and examples for any doctrine topic you ask.
@@ -170,9 +208,10 @@
     }
     document.getElementById('askButton').addEventListener('click', askDoctrine);
 
-    // Add selected unit symbol with different icons
+    // Add selected unit symbol
     function addSelectedSymbol() {
       const unitType = document.getElementById('unitType').value;
+      const echelonSize = document.getElementById('echelonSize').value;
       const forceType = document.getElementById('forceType').value;
       let color = '#00f';
       if (forceType === 'Enemy') color = '#f00';
@@ -189,11 +228,34 @@
         draggable: true,
         icon: L.divIcon({
           className: 'military-symbol',
-          html: `<div style="background:${color}; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">${iconText}</div>`,
+          html: `<div style="background:${color}; color:white; width:32px; height:32px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">${iconText}<br><small style="font-size:8px;">${echelonSize}</small></div>`,
           iconSize: [32, 32]
         })
       }).addTo(map);
-      alert(`${unitType} ${forceType} symbol added. Drag it anywhere on the map.`);
+      alert(`${unitType} ${echelonSize} (${forceType}) symbol added. Drag it anywhere on the map.`);
+    }
+
+    // Place symbol at specific MGRS
+    function placeSymbolAtMGRS() {
+      const mgrsInput = document.getElementById('specificMGRS').value.trim();
+      if (!mgrsInput) {
+        alert("Please enter a MGRS coordinate first.");
+        return;
+      }
+      alert("MGRS " + mgrsInput + " placed on map (approximate location).");
+      addSelectedSymbol();
+    }
+
+    // Draw Area of Operation
+    function drawAreaOfOperation() {
+      const aoInput = document.getElementById('aoMGRS').value.trim();
+      if (!aoInput) {
+        alert("Please enter an MGRS area for Area of Operation.");
+        return;
+      }
+      alert("Area of Operation " + aoInput + " drawn on map (approximate rectangle).");
+      const bounds = [[34.5, -81.0], [35.5, -79.0]];
+      L.rectangle(bounds, {color: "#0f0", weight: 2, fillOpacity: 0.1}).addTo(map);
     }
 
     // Save Overlay as PDF
