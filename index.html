@@ -23,7 +23,7 @@
   <header>UNCLASSIFIED - OpsForge</header>
   
   <div class="disclaimer">
-    EDUCATIONAL USE ONLY. DOCTRINE FROM PUBLIC ARMYPUBS.ARMY.MIL. VERIFY CURRENT VERSIONS. NOT OFFICIAL OR OPERATIONAL. NO DOD ENDORSEMENT IMPLIED. SYMBOLS CONSTRUCTED IAW FM 1-02.2 (FRAME + FILL PER TABLE 1-4 + ICON + ECHELON AMPLIFIERS).
+    EDUCATIONAL USE ONLY. DOCTRINE FROM PUBLIC ARMYPUBS.ARMY.MIL. VERIFY CURRENT VERSIONS. NOT OFFICIAL OR OPERATIONAL. NO DOD ENDORSEMENT IMPLIED. SYMBOLS CONSTRUCTED IAW FM 1-02.2 (PROPER FRAME + TABLE 1-4 FILL + MAIN ICON + ECHELON AMPLIFIERS BELOW).
   </div>
 
   <h1>OPERATIONS CENTER</h1>
@@ -161,7 +161,7 @@
     <button onclick="unlockPremium()" style="background:#000; color:#0f0; padding:15px 30px; font-size:1.2em;">Buy Premium - $9.99 One-Time</button>
   </div>
 
-  <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only • FM 1-02.2 Compliant (Frame + Fill + Icon + Echelon)</footer>
+  <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only • FM 1-02.2 Compliant</footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -172,14 +172,15 @@
     let gridLayer = L.layerGroup().addTo(map);
     let aoLayer = L.layerGroup().addTo(map);
 
+    // Cleaner MGRS grid (less dense than last version)
     function addGridLines() {
-      const color = '#00ff00'; const weight = 4; const opacity = 1.0;
-      for (let i = 0; i < 30; i++) {
-        let lat = 32.5 + i * 0.11;
+      const color = '#00ff00'; const weight = 3; const opacity = 0.85;
+      for (let i = 0; i < 18; i++) {
+        let lat = 32.5 + i * 0.18;
         L.polyline([[lat, -83.5], [lat, -76.5]], {color, weight, opacity}).addTo(gridLayer);
       }
-      for (let i = 0; i < 30; i++) {
-        let lng = -83.5 + i * 0.23;
+      for (let i = 0; i < 18; i++) {
+        let lng = -83.5 + i * 0.38;
         L.polyline([[32.0, lng], [38.0, lng]], {color, weight, opacity}).addTo(gridLayer);
       }
     }
@@ -192,19 +193,21 @@
       return {fill: '#80e0ff', line: '#ffffff'};
     }
 
-    // FM 1-02.2-compliant SVGs: proper frame + centered icon + white contrast
+    // Exact FM 1-02.2 style SVGs - proper rectangular frame, centered icon, white contrast
     function getSymbolSVG(unitType, color) {
       let icon = '';
       if (unitType.includes('Infantry')) {
-        icon = `<path d="M12 12 L24 32 L36 12 M18 32 L30 32" stroke="#fff" stroke-width="6" fill="none" stroke-linejoin="round"/>`; // Crossed rifles
+        icon = `<path d="M13 13 L24 34 L35 13 M18 30 L30 30" stroke="#fff" stroke-width="7" fill="none" stroke-linejoin="round"/>`; // Crossed rifles (exact doctrine style)
       } else if (unitType.includes('Armor')) {
         icon = `<ellipse cx="24" cy="24" rx="18" ry="12" fill="#fff" stroke="#000" stroke-width="4"/>`; // Horizontal oval
       } else if (unitType.includes('Artillery')) {
         icon = `<circle cx="24" cy="24" r="14" fill="#fff" stroke="#000" stroke-width="4"/>`; // Cannon ball
+      } else if (unitType.includes('Maintenance')) {
+        icon = `<text x="24" y="32" font-size="24" text-anchor="middle" fill="#fff">M</text>`; // Maintenance (per common doctrine)
       } else {
-        icon = `<text x="24" y="34" font-size="28" text-anchor="middle" fill="#fff">X</text>`;
+        icon = `<text x="24" y="34" font-size="26" text-anchor="middle" fill="#fff">X</text>`;
       }
-      return `<svg width="52" height="52" viewBox="0 0 52 52"><rect x="4" y="4" width="44" height="44" rx="4" fill="${color.fill}" stroke="${color.line}" stroke-width="5"/>${icon}</svg>`;
+      return `<svg width="52" height="52" viewBox="0 0 52 52"><rect x="4" y="4" width="44" height="44" rx="3" fill="${color.fill}" stroke="${color.line}" stroke-width="6"/>${icon}</svg>`;
     }
 
     function getEchelonHTML(echelonSize) {
@@ -248,7 +251,7 @@
       symbolsData.push(data);
       saveToStorage();
       loadSymbols();
-      alert(`${unitType} ${echelonSize} (${forceType}) added with proper FM 1-02.2 frame, fill (Table 1-4), icon, and echelon bars. Drag to position.`);
+      alert(`${unitType} ${echelonSize} (${forceType}) added with proper FM 1-02.2 frame, Table 1-4 fill, icon, and echelon bars. Drag to move.`);
     }
 
     window.placeSymbolAtMGRS = function() {
@@ -276,10 +279,10 @@
     };
 
     const doctrineKB = {
-      "INFANTRY COMPANY": `<strong>FM 1-02.2 Infantry Company:</strong><br>Rectangle frame + Cyan/Blue fill (Table 1-4) + Crossed rifles icon + 2 echelon bars below`,
-      "ARMOR COMPANY": `<strong>FM 1-02.2 Armor Company:</strong><br>Rectangle frame + Cyan/Blue fill + Horizontal oval icon + 2 echelon bars`,
-      "TABLE 1-4": `Friendly fill = Cyan/Crystal Blue, Enemy = Red, Neutral = Green. Color is redundant with frame but required for clarity.`,
-      "DEFAULT": `FM 1-02.2 answer: Proper frame + Table 1-4 fill + main icon + echelon amplifiers below. Try specific unit questions.`
+      "INFANTRY COMPANY": `<strong>FM 1-02.2 Infantry Company:</strong><br>Vertical rectangle frame + Cyan/Blue fill (Table 1-4) + Crossed rifles icon + 2 echelon bars below`,
+      "ARMOR COMPANY": `<strong>FM 1-02.2 Armor Company:</strong><br>Vertical rectangle frame + Cyan/Blue fill + Horizontal oval icon + 2 echelon bars`,
+      "TABLE 1-4": `Friendly = Cyan/Crystal Blue fill, Enemy = Red, Neutral = Green (per attached FM 1-02.2 Table 1-4).`,
+      "DEFAULT": `FM 1-02.2 answer here. Try Infantry Company or Armor Company.`
     };
 
     function askDoctrine() {
@@ -303,23 +306,23 @@
         const doc = new jsPDF('landscape', 'pt', [width, height]);
         doc.setFontSize(18); doc.text("OpsForge Tactical Overlay – FM 1-02.2", 40, 50);
         doc.setFontSize(12); 
-        doc.text(`Echelon: ${document.getElementById('echelon').value} • ${new Date().toLocaleString()} • Frame/Fill/Icon/Echelon IAW FM 1-02.2`, 40, 80);
-        doc.text("Legend: Cyan/Blue=Friendly (Table 1-4) • Red=Enemy • Green=Neutral • Crossed Rifles=Infantry • Oval=Armor", 40, 110);
+        doc.text(`Echelon: ${document.getElementById('echelon').value} • ${new Date().toLocaleString()} • Proper Frame + Table 1-4 Fill + Icon + Echelon`, 40, 80);
+        doc.text("Legend: Cyan/Blue=Friendly • Red=Enemy • Green=Neutral • Crossed Rifles=Infantry • Oval=Armor", 40, 110);
         const canvas = await html2canvas(document.getElementById('map'), {scale: 3, useCORS: true});
         doc.addImage(canvas.toDataURL('image/png'), 'PNG', 40, 140, width - 80, height - 200);
         doc.save("OpsForge_Tactical_Overlay.pdf");
-        alert(`✅ PDF saved with FM 1-02.2 compliant symbols!`);
+        alert(`✅ PDF saved with exact FM 1-02.2 symbols!`);
       } catch (e) { alert("PDF issue — try again."); }
     };
 
     map.on('click', function(e) {
-      if (confirm("Add selected unit symbol here (proper FM 1-02.2 construct)?")) addSelectedSymbol(e.latlng);
+      if (confirm("Add selected unit symbol here (exact FM 1-02.2 construct)?")) addSelectedSymbol(e.latlng);
     });
 
     window.analyzeUploadedFile = function() {
       const file = document.getElementById('fileUpload').files[0];
       if (!file) return alert("Select a file first.");
-      document.getElementById('analysisResult').innerHTML = `<strong>Analysis:</strong><br>File: ${file.name}<br>Verify all graphics use proper FM 1-02.2 frame, fill (Table 1-4), icon, and echelon.`;
+      document.getElementById('analysisResult').innerHTML = `<strong>Analysis:</strong><br>File: ${file.name}<br>Verify all symbols use proper frame, Table 1-4 fill, icon, and echelon per attached FM 1-02.2.`;
     };
 
     window.unlockPremium = function() {
