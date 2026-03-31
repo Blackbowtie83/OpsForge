@@ -59,6 +59,14 @@
     </div>
   </div>
 
+  <!-- File Upload and Document Analysis -->
+  <div style="margin:20px;">
+    <h2>Upload Orders, Annexes, Overlays</h2>
+    <input type="file" id="fileUpload" accept=".doc,.docx,.pdf,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.xml" style="width:100%; padding:12px; background:#222; color:#0f0;">
+    <button onclick="analyzeUploadedFile()">Analyze Document</button>
+    <div id="analysisResult" style="margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px;"></div>
+  </div>
+
   <footer>UNCLASSIFIED - OpsForge © 2026 • Educational & Training Use Only</footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -108,52 +116,4 @@
         draggable: true,
         icon: L.divIcon({
           className: 'military-symbol',
-          html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
-          iconSize: [32, 32]
-        })
-      }).addTo(map);
-      alert("Infantry Company symbol added. Drag it anywhere on the map.");
-    }
-
-    // Improved Save Overlay as PDF using html2canvas + jsPDF
-    async function saveOverlayAsPDF() {
-      try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape', 'pt', 'a4');
-
-        doc.setFontSize(18);
-        doc.text("OpsForge Tactical Overlay", 40, 50);
-        doc.setFontSize(12);
-        doc.text("AR 25-50 Formatted • UNCLASSIFIED", 40, 80);
-        doc.text("Echelon: " + document.getElementById('echelon').value, 40, 100);
-        doc.text("Generated on: " + new Date().toLocaleDateString(), 40, 120);
-
-        // Capture the map as image
-        const canvas = await html2canvas(document.getElementById('map'), { scale: 1.5 });
-        const mapImage = canvas.toDataURL('image/png');
-
-        doc.addImage(mapImage, 'PNG', 40, 150, 700, 400);
-
-        doc.save("OpsForge_Tactical_Overlay.pdf");
-        alert("✅ PDF downloaded successfully! It includes your map, symbols, and MGRS grid (AR 25-50 formatted).");
-      } catch (e) {
-        alert("PDF creation failed. Please try again.");
-      }
-    }
-
-    // Click on map to add symbol
-    map.on('click', function(e) {
-      if (confirm("Add Infantry Company symbol at this location?")) {
-        const marker = L.marker(e.latlng, {
-          draggable: true,
-          icon: L.divIcon({
-            className: 'military-symbol',
-            html: '<div style="background:#00f; color:white; width:32px; height:22px; text-align:center; line-height:22px; border:2px solid white; font-weight:bold; font-size:14px;">I</div>',
-            iconSize: [32, 32]
-          })
-        }).addTo(map);
-      }
-    });
-  </script>
-</body>
-</html>
+          html: '<div style="background:#
