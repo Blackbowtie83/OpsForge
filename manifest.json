@@ -1,0 +1,17 @@
+{
+  "name": "OpsForge",
+  "short_name": "OpsForge",
+  "description": "AI Army MDMP & Operations Process Tool",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#001f00",
+  "theme_color": "#001f00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/512x512/001f00/0f0?text=OF",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
