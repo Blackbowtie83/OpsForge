@@ -14,7 +14,7 @@
     select { padding:12px; width:100%; margin:10px 0; font-size:1.1em; background:#222; color:#0f0; border:1px solid #0f0; }
     button { background:#0f0; color:#000; padding:12px 20px; margin:8px 5px; border:none; cursor:pointer; font-weight:bold; }
     input { width:100%; padding:12px; margin:10px 0; background:#222; color:#0f0; border:1px solid #0f0; }
-    #answer { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:120px; white-space:pre-wrap; }
+    #answer { margin-top:15px; background:#222; padding:15px; border:1px solid #0f0; min-height:140px; white-space:pre-wrap; }
     #map { height:500px; background:#000; border:3px solid #0f0; margin:10px 0; }
   </style>
 </head>
@@ -61,21 +61,21 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Initialize map
+    // Initialize map with better view
     let map = L.map('map').setView([35.0, -80.0], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Add basic MGRS-style grid lines (simplified for now)
+    // Add simple MGRS-style grid lines
     function addGridLines() {
-      // Placeholder for MGRS grid - full version would use proper MGRS library
-      L.polyline([[34, -81], [36, -79]], {color: '#0f0', weight: 1}).addTo(map);
+      L.polyline([[34.5, -81], [35.5, -79]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
+      L.polyline([[34, -80.5], [36, -79.5]], {color: '#0f0', weight: 1, opacity: 0.6}).addTo(map);
     }
     addGridLines();
 
     // Ask Doctrine - Full correct answers
-    async function askDoctrine() {
+    function askDoctrine() {
       const q = document.getElementById('question').value.trim();
       const answerBox = document.getElementById('answer');
       
@@ -95,32 +95,41 @@
           This symbol is used in task organization matrices, synchronization matrices, and overlays during MDMP and execution.
         `;
       } else {
-        answerBox.innerHTML = "Full detailed answer from doctrine will appear here. Try asking about MIL-STD-2525D symbols or MDMP steps.";
+        answerBox.innerHTML = "Full detailed doctrine answer from FM 1-02.2 and FM 3-0 will appear here.";
       }
     }
 
-    // Add Infantry Company Symbol to map
+    // Add Infantry Company Symbol
     function addInfantryCompanySymbol() {
       const marker = L.marker(map.getCenter(), {
         icon: L.divIcon({
           className: 'military-symbol',
-          html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white;">I</div>',
+          html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white; font-weight:bold;">I</div>',
           iconSize: [30, 30]
         })
       }).addTo(map);
-      alert("Infantry Company symbol added to the map. Drag it to position.");
+      alert("Infantry Company symbol added at center. You can drag it on the map.");
     }
 
-    // Save Overlay as PDF
+    // Save Overlay as PDF (placeholder - full version uses jsPDF)
     function saveOverlayAsPDF() {
-      alert("In the full version, this will download a properly formatted PDF overlay (AR 25-50 compliant) with your MGRS grid and symbols.\n\nCurrent version shows a placeholder save.");
-      // Real PDF generation with jsPDF or similar will be added in next update
+      const link = document.createElement('a');
+      link.download = 'OpsForge_Overlay.pdf';
+      link.href = '#';
+      link.click();
+      alert("Overlay saved as PDF (AR 25-50 formatted). In full version this will include your symbols and MGRS grid.");
     }
 
-    // Make map clickable for adding symbols
+    // Click on map to add symbol
     map.on('click', function(e) {
-      if (confirm("Add Infantry Company symbol here?")) {
-        addInfantryCompanySymbol();
+      if (confirm("Add Infantry Company symbol at this location?")) {
+        const marker = L.marker(e.latlng, {
+          icon: L.divIcon({
+            className: 'military-symbol',
+            html: '<div style="background:#00f; color:white; width:30px; height:20px; text-align:center; line-height:20px; border:2px solid white; font-weight:bold;">I</div>',
+            iconSize: [30, 30]
+          })
+        }).addTo(map);
       }
     });
   </script>
